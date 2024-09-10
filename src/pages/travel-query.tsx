@@ -11,7 +11,7 @@ interface TouristSpot {
 }
 
 // Initialize the Google Generative AI client
-const apiKey = import.meta.env.VITE_GOOGLE_GEMINI_KEY;
+const apiKey = 'AIzaSyCLfhxa3ehlfch312WQDyElJOPS4nrRIc0' ;
 
 if (!apiKey) {
   throw new Error("API key for Google Gemini is missing.");
