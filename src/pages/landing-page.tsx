@@ -14,7 +14,7 @@ const LandingPage: FC = () => {
         </div>
      
      <div className='flex items-center justify-center h-full  ' >
-      <Link to='/auth' >
+      <Link to='/home' >
       <Button/>
       </Link>
      </div>

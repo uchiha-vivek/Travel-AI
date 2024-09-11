@@ -7,11 +7,11 @@ import { motion } from 'framer-motion'; // Import Framer Motion for animations
 interface TouristSpot {
   name: string;
   address: string;
-  contact: string;
+  contact_number: string;
 }
 
 // Initialize the Google Generative AI client
-const apiKey = 'AIzaSyCLfhxa3ehlfch312WQDyElJOPS4nrRIc0' ;
+const apiKey = 'AIzaSyCLfhxa3ehlfch312WQDyElJOPS4nrRIc0';
 
 if (!apiKey) {
   throw new Error("API key for Google Gemini is missing.");
@@ -22,6 +22,9 @@ const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
 const TravelQuery: FC = () => {
   const [location, setLocation] = useState<string>(''); // State to hold the input location
+  const [numberOfDays, setNumberOfDays] = useState<number>(1); // State for number of days
+  const [budget, setBudget] = useState<string>('cheap'); // State for budget preference
+  const [travelType, setTravelType] = useState<string>('solo'); // State for travel type
   const [touristSpots, setTouristSpots] = useState<TouristSpot[]>([]); // State to hold tourist spots
   const [error, setError] = useState<string | null>(null); // State to handle error messages
   const [isLoading, setIsLoading] = useState<boolean>(false); // State to manage loading state
@@ -37,7 +40,7 @@ const TravelQuery: FC = () => {
     setError(null); // Clear any previous errors
 
     try {
-      // Request Gemini AI for tourist spot information
+      // Request Gemini AI for tourist spot information with additional parameters
       const chatSession = model.startChat({
         generationConfig: {
           temperature: 1,
@@ -51,14 +54,20 @@ const TravelQuery: FC = () => {
             role: "user",
             parts: [
               {
-                text: `Find nearby tourist spots for the location: ${location}. Provide details including the name of the tourist spot, address, contact information, and nearby hotels. Format the response in JSON with the following fields: name, address, contact number .`,
+                text: `Find nearby tourist spots for the location: ${location}. 
+                       Consider the following parameters: 
+                       - Number of days: ${numberOfDays}
+                       - Budget: ${budget} (cheap or expensive)
+                       - Travel type: ${travelType} (solo or couple).
+                       Provide details including the name of the tourist spot, address, contact information, and nearby hotels. 
+                       Format the response in JSON with the following fields: name, address, contact number.`,
               },
             ],
           },
         ],
       });
 
-      const result = await chatSession.sendMessage("Find nearby tourist spots.");
+      const result = await chatSession.sendMessage("Find nearby tourist spots and also nearby hotels. ");
       const responseText: string = typeof result.response?.text === 'function' ? result.response.text() : result.response?.text || '';
 
       // Log raw response for debugging
@@ -112,6 +121,33 @@ const TravelQuery: FC = () => {
             placeholder="Enter your location..."
             className="border p-2 rounded w-full max-w-md mb-4"
           />
+
+          <input
+            type="number"
+            value={numberOfDays}
+            onChange={(e) => setNumberOfDays(Number(e.target.value))}
+            placeholder="Number of days"
+            className="border p-2 rounded w-full max-w-md mb-4"
+          />
+
+          <select
+            value={budget}
+            onChange={(e) => setBudget(e.target.value)}
+            className="border p-2 rounded w-full max-w-md mb-4"
+          >
+            <option value="cheap">Cheap</option>
+            <option value="expensive">Expensive</option>
+          </select>
+
+          <select
+            value={travelType}
+            onChange={(e) => setTravelType(e.target.value)}
+            className="border p-2 rounded w-full max-w-md mb-4"
+          >
+            <option value="solo">Solo</option>
+            <option value="couple">Couple</option>
+          </select>
+
           <button
             onClick={fetchTouristSpots}
             className={`px-4 py-2 border-2 border-white text-white rounded-lg transition-colors duration-200 
@@ -143,7 +179,7 @@ const TravelQuery: FC = () => {
                   >
                     <h4 className="text-lg font-semibold mb-2 text-gray-800">{spot.name}</h4>
                     <p className="text-gray-600"><strong>Address:</strong> {spot.address}</p>
-                    <p className="text-gray-600"><strong>Contact:</strong> {spot.contact}</p>
+                    <p className="text-gray-600"><strong>Contact:</strong> {spot.contact_number}</p>
                   </motion.div>
                 ))}
               </div>
